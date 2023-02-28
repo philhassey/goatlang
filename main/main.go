@@ -22,6 +22,10 @@ var treeFlag = flag.Bool("tree", false, "dump tree")
 var liveFlag = flag.Bool("live", false, "live coding features")
 
 func main() {
+	Main()
+}
+
+func Main(loaders ...func(*goatlang.VM)) {
 	flag.Parse()
 	args := flag.Args()
 
@@ -40,13 +44,13 @@ func main() {
 	if len(args) > 0 {
 		arg := args[0]
 		if *liveFlag {
-			live(arg)
+			live(arg, loaders)
 			return
 		}
-		run(arg)
+		run(arg, loaders)
 		return
 	}
-	repl()
+	repl(loaders)
 }
 
 func options(stdout io.Writer) []goatlang.RunOption {
@@ -62,11 +66,11 @@ func options(stdout io.Writer) []goatlang.RunOption {
 	return opts
 }
 
-func run(arg string) {
+func run(arg string, loaders []func(*goatlang.VM)) {
 	root := "."
 	sys := os.DirFS(root)
 	opts := options(os.Stdout)
-	vm := goatlang.NewVM()
+	vm := goatlang.NewVM(goatlang.WithLoaders(loaders...))
 	if err := vm.Load(sys, arg, opts...); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
@@ -77,7 +81,7 @@ func run(arg string) {
 	}
 }
 
-func live(arg string) {
+func live(arg string, loaders []func(*goatlang.VM)) {
 	root := "."
 	sys := os.DirFS(root)
 	liveCh := make(chan string, 256)
@@ -109,7 +113,7 @@ func live(arg string) {
 
 	// init vm
 	opts := options(rl.Stdout())
-	vm := goatlang.NewVM(goatlang.WithStdout(rl.Stdout()))
+	vm := goatlang.NewVM(goatlang.WithStdout(rl.Stdout()), goatlang.WithLoaders(loaders...))
 	vm.Set("builtin.__yield", goatlang.NewFunc(0, 0, func(v *goatlang.VM) {
 		for {
 			select {
@@ -191,10 +195,10 @@ func input(rl *readline.Instance) (string, error) {
 	return line, nil
 }
 
-func repl() {
+func repl(loaders []func(*goatlang.VM)) {
 	sys := os.DirFS(".")
 	opts := options(os.Stdout)
-	vm := goatlang.NewVM()
+	vm := goatlang.NewVM(goatlang.WithLoaders(loaders...))
 	rl, err := readline.New("> ")
 	if err != nil {
 		log.Fatalln(err)

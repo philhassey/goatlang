@@ -427,6 +427,13 @@ func TestVM_WithStdout(t *testing.T) {
 	assert(t, "stdout", string(stdout.Bytes()), "42")
 }
 
+func TestVM_WithLoaders(t *testing.T) {
+	var loaded bool
+	loader := func(*VM) { loaded = true }
+	_ = NewVM(WithLoaders(loader))
+	assert(t, "loaded", loaded, true)
+}
+
 func TestVM_unknown(t *testing.T) {
 	want := "unknown code"
 	codes := []instruction{{Code: -42}}

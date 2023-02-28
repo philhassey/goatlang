@@ -30,10 +30,12 @@ func (v *VM) Get(key string) Value        { return v.globals.Get(key) }
 
 type VMOption func(*vmConfig)
 type vmConfig struct {
-	stdout io.Writer
+	stdout  io.Writer
+	loaders []func(*VM)
 }
 
-func WithStdout(v io.Writer) VMOption { return func(c *vmConfig) { c.stdout = v } }
+func WithStdout(v io.Writer) VMOption     { return func(c *vmConfig) { c.stdout = v } }
+func WithLoaders(v ...func(*VM)) VMOption { return func(c *vmConfig) { c.loaders = v } }
 
 func NewVM(options ...VMOption) *VM {
 	vm := &VM{
@@ -45,6 +47,9 @@ func NewVM(options ...VMOption) *VM {
 	}
 	for _, o := range options {
 		o(&config)
+	}
+	for _, l := range config.loaders {
+		l(vm)
 	}
 	vm.stdout = config.stdout
 	return vm
