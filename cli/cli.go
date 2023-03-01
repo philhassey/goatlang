@@ -20,6 +20,7 @@ var profile = flag.String("profile", "", "write cpu profile to `file`, use `go t
 var codeFlag = flag.Bool("code", false, "dump code")
 var treeFlag = flag.Bool("tree", false, "dump tree")
 var liveFlag = flag.Bool("live", false, "live coding features")
+var rootFlag = flag.String("root", ".", "root directory for loading imports")
 
 func Main(loaders ...func(*goatlang.VM)) {
 	flag.Parse()
@@ -63,7 +64,7 @@ func options(stdout io.Writer) []goatlang.RunOption {
 }
 
 func run(arg string, loaders []func(*goatlang.VM)) {
-	root := "."
+	root := *rootFlag
 	sys := os.DirFS(root)
 	opts := options(os.Stdout)
 	vm := goatlang.NewVM(goatlang.WithLoaders(loaders...))
@@ -78,7 +79,7 @@ func run(arg string, loaders []func(*goatlang.VM)) {
 }
 
 func live(arg string, loaders []func(*goatlang.VM)) {
-	root := "."
+	root := *rootFlag
 	sys := os.DirFS(root)
 	liveCh := make(chan string, 256)
 	const liveReloadCmd = "__liveReloadCmd"
@@ -192,7 +193,8 @@ func input(rl *readline.Instance) (string, error) {
 }
 
 func repl(loaders []func(*goatlang.VM)) {
-	sys := os.DirFS(".")
+	root := *rootFlag
+	sys := os.DirFS(root)
 	opts := options(os.Stdout)
 	vm := goatlang.NewVM(goatlang.WithLoaders(loaders...))
 	rl, err := readline.New("> ")
