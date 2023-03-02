@@ -39,7 +39,7 @@ func Test_Value_Type(t *testing.T) {
 
 func Test_Struct(t *testing.T) {
 	t.Run("GetAttr", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		if _, err := vm.Eval(nil, "test", "package main; type T struct { X int }; t := &T{X:42}"); err != nil {
 			t.Fatalf("Eval error: %v", err)
 		}
@@ -49,7 +49,7 @@ func Test_Struct(t *testing.T) {
 	})
 
 	t.Run("SetAttr", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		if _, err := vm.Eval(nil, "test", "package main; type T struct { X int }; t := &T{X:0}"); err != nil {
 			t.Fatalf("Eval error: %v", err)
 		}
@@ -64,7 +64,7 @@ func Test_Struct(t *testing.T) {
 	})
 
 	t.Run("New", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		if _, err := vm.Eval(nil, "test", "package main; type T struct { X int }; t := &T{X:0}"); err != nil {
 			t.Fatalf("Eval error: %v", err)
 		}
@@ -112,7 +112,7 @@ func Test_NativeStruct(t *testing.T) {
 	})
 
 	t.Run("Index", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		v := NewTestStruct()
 		vm.Set("main.t", v)
 		rets, err := vm.Eval(nil, "test", "t.X = 42; t.X")
@@ -138,7 +138,7 @@ func Test_Func(t *testing.T) {
 			res := args[0].Int() * args[1].Int()
 			assert(t, "res", res, 42)
 		})
-		vm := NewVM()
+		vm := New()
 		vm.Set("main.F", f)
 		_, err := vm.Call("main.F", 0, Int(6), Int(7))
 		if err != nil {
@@ -154,7 +154,7 @@ func Test_Func(t *testing.T) {
 			assert(t, "res", res, 42)
 			return []Value{Int(4), Int(res), Int(2)}
 		})
-		vm := NewVM()
+		vm := New()
 		vm.Set("main.F", f)
 		res, err := vm.Call("main.F", 2, Int(6), Int(7))
 		if err != nil {

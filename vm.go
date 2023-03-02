@@ -37,7 +37,7 @@ type vmConfig struct {
 func WithStdout(v io.Writer) VMOption     { return func(c *vmConfig) { c.stdout = v } }
 func WithLoaders(v ...func(*VM)) VMOption { return func(c *vmConfig) { c.loaders = v } }
 
-func NewVM(options ...VMOption) *VM {
+func New(options ...VMOption) *VM {
 	vm := &VM{
 		globals: newGlobals(),
 	}

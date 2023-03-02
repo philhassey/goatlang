@@ -173,7 +173,7 @@ func TestCompile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Parse error: %v", err)
 			}
-			vm := NewVM()
+			vm := New()
 			g := vm.globals
 			codes, _, err := compile(g, tree, false)
 			if err != nil {

@@ -97,7 +97,7 @@ func TestLoadPackage_Exec(t *testing.T) {
 				t.Fatalf("LoadPackage error: %v", err)
 			}
 			// tree = treeSort(tree)
-			vm := NewVM()
+			vm := New()
 			codes, slots, err := compilePkgs(vm.globals, tree, false)
 			if err != nil {
 				t.Fatalf("Compile error: %v", err)

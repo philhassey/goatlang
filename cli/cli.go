@@ -67,7 +67,7 @@ func run(arg string, loaders []func(*goatlang.VM)) {
 	root := *rootFlag
 	sys := os.DirFS(root)
 	opts := options(os.Stdout)
-	vm := goatlang.NewVM(goatlang.WithLoaders(loaders...))
+	vm := goatlang.New(goatlang.WithLoaders(loaders...))
 	if err := vm.Load(sys, arg, opts...); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
@@ -110,7 +110,7 @@ func live(arg string, loaders []func(*goatlang.VM)) {
 
 	// init vm
 	opts := options(rl.Stdout())
-	vm := goatlang.NewVM(goatlang.WithStdout(rl.Stdout()), goatlang.WithLoaders(loaders...))
+	vm := goatlang.New(goatlang.WithStdout(rl.Stdout()), goatlang.WithLoaders(loaders...))
 	vm.Set("builtin.__yield", goatlang.NewFunc(0, 0, func(v *goatlang.VM) {
 		for {
 			select {
@@ -196,7 +196,7 @@ func repl(loaders []func(*goatlang.VM)) {
 	root := *rootFlag
 	sys := os.DirFS(root)
 	opts := options(os.Stdout)
-	vm := goatlang.NewVM(goatlang.WithLoaders(loaders...))
+	vm := goatlang.New(goatlang.WithLoaders(loaders...))
 	rl, err := readline.New("> ")
 	if err != nil {
 		log.Fatalln(err)

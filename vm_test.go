@@ -347,7 +347,7 @@ func TestVM(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Parse error: %v", err)
 				}
-				vm := NewVM()
+				vm := New()
 				codes, slots, err := compile(vm.globals, tree, opt.optimize)
 				if err != nil {
 					t.Fatalf("Compile error: %v", err)
@@ -401,7 +401,7 @@ func TestVM_error(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Parse error: %v", err)
 			}
-			vm := NewVM()
+			vm := New()
 			codes, slots, err := compile(vm.globals, tree, false)
 			if err != nil {
 				t.Fatalf("Compile error: %v", err)
@@ -419,7 +419,7 @@ func TestVM_error(t *testing.T) {
 
 func TestVM_WithStdout(t *testing.T) {
 	stdout := &bytes.Buffer{}
-	vm := NewVM(WithStdout(stdout))
+	vm := New(WithStdout(stdout))
 	_, err := vm.Eval(nil, "stdin", `print("42")`)
 	if err != nil {
 		t.Fatalf("Eval err got %v want nil", err)
@@ -430,14 +430,14 @@ func TestVM_WithStdout(t *testing.T) {
 func TestVM_WithLoaders(t *testing.T) {
 	var loaded bool
 	loader := func(*VM) { loaded = true }
-	_ = NewVM(WithLoaders(loader))
+	_ = New(WithLoaders(loader))
 	assert(t, "loaded", loaded, true)
 }
 
 func TestVM_unknown(t *testing.T) {
 	want := "unknown code"
 	codes := []instruction{{Code: -42}}
-	vm := NewVM()
+	vm := New()
 	_, err := vm.run(codes, 0)
 	if err == nil || !strings.Contains(err.Error(), want) {
 		t.Fatalf("Exec error got %v want %v", err, want)
@@ -445,7 +445,7 @@ func TestVM_unknown(t *testing.T) {
 }
 
 func TestVM_Call(t *testing.T) {
-	vm := NewVM()
+	vm := New()
 	res, err := vm.Call("math.Sqrt", 1, Float64(256))
 	if err != nil {
 		t.Fatalf("Call error got %v want nil", err)
@@ -459,7 +459,7 @@ func TestVM_Call(t *testing.T) {
 }
 
 func TestVM_incorrect_stack(t *testing.T) {
-	vm := NewVM()
+	vm := New()
 	vm.Set("f", NewFunc(0, 1, func(vm *VM) {}))
 	_, err := vm.Call("f", 1)
 	want := "incorrect returns" // was "incorrect stack"
@@ -469,7 +469,7 @@ func TestVM_incorrect_stack(t *testing.T) {
 }
 
 func TestVM_Call_error(t *testing.T) {
-	vm := NewVM()
+	vm := New()
 	_, err := vm.Call("math.Sqrt", 2, Float64(256))
 	want := "incorrect returns"
 	if !strings.Contains(err.Error(), want) {
@@ -478,7 +478,7 @@ func TestVM_Call_error(t *testing.T) {
 }
 
 func TestVM_Func(t *testing.T) {
-	vm := NewVM()
+	vm := New()
 	res, err := vm.Func(vm.globals.Get("math.Sqrt"), 1, Float64(256))
 	if err != nil {
 		t.Fatalf("Func error got %v want nil", err)
@@ -492,7 +492,7 @@ func TestVM_Func(t *testing.T) {
 }
 
 func TestVM_Func_error(t *testing.T) {
-	vm := NewVM()
+	vm := New()
 	_, err := vm.Func(vm.globals.Get("math.Sqrt"), 2, Float64(256))
 	want := "incorrect returns"
 	if !strings.Contains(err.Error(), want) {
@@ -502,7 +502,7 @@ func TestVM_Func_error(t *testing.T) {
 
 func TestVM_Eval(t *testing.T) {
 	t.Run("Happy", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		rets, err := vm.Eval(nil, "test", "42", testWithNoop())
 		if err != nil {
 			t.Fatalf("Eval error: %v", err)
@@ -511,7 +511,7 @@ func TestVM_Eval(t *testing.T) {
 		assert(t, "res", res, 42)
 	})
 	t.Run("WithImports", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		imports := map[string]string{}
 		_, err := vm.Eval(mapFS{}, "test", `import "fmt"`, WithEvalImports(imports))
 		if err != nil {
@@ -521,7 +521,7 @@ func TestVM_Eval(t *testing.T) {
 		assert(t, "res", res, "map[fmt:fmt]")
 	})
 	t.Run("WithTreeDump", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		w := &bytes.Buffer{}
 		_, err := vm.Eval(mapFS{}, "test", `7 + 2 * 3`, WithTreeDump(w))
 		if err != nil {
@@ -532,7 +532,7 @@ func TestVM_Eval(t *testing.T) {
 	})
 
 	t.Run("WithCodeDump", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		w := &bytes.Buffer{}
 		_, err := vm.Eval(mapFS{}, "test", `42`, WithCodeDump(w))
 		if err != nil {
@@ -557,7 +557,7 @@ func TestVM_Eval_error(t *testing.T) {
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {
-			vm := NewVM()
+			vm := New()
 			_, err := vm.Eval(mapFS{}, "eval", row.In)
 			if err == nil || !strings.Contains(err.Error(), row.Err) {
 				t.Fatalf("Eval error got %v want %v", err, row.Err)
@@ -591,7 +591,7 @@ func TestVM_Eval_importError(t *testing.T) {
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {
-			vm := NewVM()
+			vm := New()
 			_, err := vm.Eval(row.FS, "eval", row.In)
 			if err == nil || !strings.Contains(err.Error(), row.Err) {
 				t.Fatalf("Eval error got %v want %v", err, row.Err)
@@ -604,14 +604,14 @@ func testWithNoop() RunOption { return func(o *runConfig) {} }
 
 func TestVM_Load(t *testing.T) {
 	t.Run("package", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		err := vm.Load(mapFS{"main/main.go": "package main"}, "main", testWithNoop())
 		if err != nil {
 			t.Fatalf("Load error: %v", err)
 		}
 	})
 	t.Run("file", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		err := vm.Load(mapFS{"main/main.go": "package main"}, "main/main.go", testWithNoop())
 		if err != nil {
 			t.Fatalf("Load error: %v", err)
@@ -619,7 +619,7 @@ func TestVM_Load(t *testing.T) {
 	})
 
 	t.Run("buildConstraintsBug", func(t *testing.T) {
-		vm := NewVM()
+		vm := New()
 		err := vm.Load(mapFS{
 			"point/point.go": `package point; type Point struct {}`,
 			"point/goat.go": `//go:build !goat
@@ -650,7 +650,7 @@ func TestVM_Load_error(t *testing.T) {
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {
-			vm := NewVM()
+			vm := New()
 			err := vm.Load(row.FS, row.Arg)
 			if err == nil || !strings.Contains(err.Error(), row.Err) {
 				t.Fatalf("Load error got %v want %v", err, row.Err)

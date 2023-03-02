@@ -92,7 +92,7 @@ func TestBuiltins(t *testing.T) {
 				t.Fatalf("Parse error: %v", err)
 			}
 			stdout := &bytes.Buffer{}
-			vm := NewVM(WithStdout(stdout))
+			vm := New(WithStdout(stdout))
 			codes, slots, err := compile(vm.globals, tree, false)
 			if err != nil {
 				t.Fatalf("Compile error: %v", err)
@@ -124,7 +124,7 @@ func testEval(t *testing.T, in string) string {
 		t.Fatalf("Parse error: %v", err)
 	}
 	stdout := &bytes.Buffer{}
-	vm := NewVM(WithStdout(stdout))
+	vm := New(WithStdout(stdout))
 	codes, slots, err := compile(vm.globals, tree, false)
 	if err != nil {
 		t.Fatalf("Compile error: %v", err)
@@ -194,7 +194,7 @@ func TestBuiltins_error(t *testing.T) {
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {
-			vm := NewVM()
+			vm := New()
 			_, err := vm.Eval(mapFS{}, "eval", row.In)
 			if err == nil || !strings.Contains(err.Error(), row.Err) {
 				t.Fatalf("Eval error got %v want %v", err, row.Err)
