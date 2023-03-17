@@ -358,7 +358,7 @@ func (v *VM) exec() {
 			lookup := map[string]int{}
 			data := newIntMap(int(i.A) / 2)
 			methods := newIntMap(0)
-			s := newStruct(0, lookup, data, &methods)
+			s := newStruct(0, lookup, nil, data, &methods)
 			for n := 0; n < int(i.A); n += 2 {
 				k := v.stack[len(v.stack)-int(i.A)+n].Int()
 				s.addField(v.globals.Key(k), k, v.stack[len(v.stack)-int(i.A)+n+1])

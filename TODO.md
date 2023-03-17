@@ -7,7 +7,6 @@
 - embed as []byte support
 - add custom byte slice type so string <-> []byte isn't a mess
 
-- add proper field ordering according to struct def (a tiny bit useful)
 - type switch, type assertions (trying to avoid using these anyways)
 
 - auto-init features for type aliases `type T struct{X int}; type A []T; x := A{{X:42}}` (not that useful)
@@ -45,6 +44,7 @@
 - compile time type checking (see: d11d554f3fa501e7b7b1a0a52a29d9ca4780f1bf)
 
 # Done
+- add proper field ordering according to struct def (a tiny bit useful)
 - properly handle ignoring _test files
 - also local type aliases
 - types that refer to specific structs, global or local (local structs must be globally defined path/to/pkg.FuncName.TypeName)

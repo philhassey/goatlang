@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 /**
@@ -965,14 +964,15 @@ type structT struct {
 	Object
 	TypeN   int
 	Lookup  map[string]int
+	Order   []string
 	Fields  intMap
 	Methods *intMap
 }
 
 func NewStruct(base Value, data []Value) Value {
 	b := base.value.(*structT)
-	lookup, fields, methods := b.Lookup, b.Fields.Copy(), b.Methods
-	s := newStruct(b.TypeN, lookup, fields, methods)
+	lookup, order, fields, methods := b.Lookup, b.Order, b.Fields.Copy(), b.Methods
+	s := newStruct(b.TypeN, lookup, order, fields, methods)
 	st := s.value.(*structT)
 	for n := 0; n < len(data); n += 2 {
 		st.SetAttr(data[n].String(), data[n+1])
@@ -982,8 +982,8 @@ func NewStruct(base Value, data []Value) Value {
 
 func newStructByIndex(base Value, data []Value) Value {
 	b := base.value.(*structT)
-	lookup, fields, methods := b.Lookup, b.Fields.Copy(), b.Methods
-	s := newStruct(b.TypeN, lookup, fields, methods)
+	lookup, order, fields, methods := b.Lookup, b.Order, b.Fields.Copy(), b.Methods
+	s := newStruct(b.TypeN, lookup, order, fields, methods)
 	st := s.value.(*structT)
 	for n := 0; n < len(data); n += 2 {
 		st.SetIndex(data[n].Int(), data[n+1])
@@ -991,8 +991,8 @@ func newStructByIndex(base Value, data []Value) Value {
 	return s
 }
 
-func newStruct(typeN int, lookup map[string]int, data intMap, methods *intMap) Value {
-	return Value{t: TypeStruct | Type(typeN<<8), value: &structT{Lookup: lookup, Fields: data, Methods: methods}}
+func newStruct(typeN int, lookup map[string]int, order []string, data intMap, methods *intMap) Value {
+	return Value{t: TypeStruct | Type(typeN<<8), value: &structT{Lookup: lookup, Order: order, Fields: data, Methods: methods}}
 }
 
 func (s *structT) GetAttr(k string) Value {
@@ -1013,30 +1013,24 @@ func (s *structT) GetIndex(k int) Value {
 
 func (s *structT) String() string {
 	items := []string{}
-	for k, v := range s.Lookup {
-		vv, ok := s.Fields.Get(v)
-		if !ok {
-			continue
-		}
+	for _, k := range s.Order {
+		v := s.Lookup[k]
+		vv, _ := s.Fields.Get(v)
 		items = append(items, k+":"+vv.safeStr())
 	}
-	slices.Sort(items)
 	return "&{" + strings.Join(items, " ") + "}"
 }
 
 func (s *structT) SafeStr() string {
 	items := []string{}
-	for k, v := range s.Lookup {
-		vv, ok := s.Fields.Get(v)
-		if !ok {
-			continue
-		}
+	for _, k := range s.Order {
+		v := s.Lookup[k]
+		vv, _ := s.Fields.Get(v)
 		if !vv.t.isSafeStr() {
 			return "&{...}"
 		}
 		items = append(items, k+":"+vv.safeStr())
 	}
-	slices.Sort(items)
 	return "&{" + strings.Join(items, " ") + "}"
 }
 
@@ -1071,6 +1065,9 @@ func newNext(next func() (Value, Value, bool)) Value {
 }
 
 func (v Value) addField(key string, idx int, val Value) {
+	if _, ok := v.value.(*structT).Lookup[key]; !ok {
+		v.value.(*structT).Order = append(v.value.(*structT).Order, key)
+	}
 	v.value.(*structT).Lookup[key] = idx
 	v.value.(*structT).Fields.Set(idx, val)
 }
