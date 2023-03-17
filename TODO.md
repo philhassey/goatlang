@@ -1,17 +1,23 @@
 # To do
+- search vendor/ for packages
 
 # Later
+- add a fun interactive example
 
 # Way later (if ever)
-- cache parse / compile data so live reload is ultra fast
-- add custom byte slice type so string <-> []byte isn't a mess
 - types that refer to specific structs, global or local (local structs must be globally defined path/to/pkg.FuncName.TypeName)
+- embed as []byte support
+- add custom byte slice type so string <-> []byte isn't a mess
 - auto-init features for type aliases `type T struct{X int}; type A []T; x := A{{X:42}}`
 - also local type aliases
 - add proper field ordering according to struct def (a tiny bit useful)
 - properly handle ignoring _test files, and maybe other os/arch specific files
-- type switch, type assertions (trying to avoid using these anyways)
 
+- add FPUSH, SPUSH - unsafe hacks, but useful to reduce global lookup size
+- type switch, type assertions (trying to avoid using these anyways)
+- cache parse / compile data so live reload is ultra fast
+
+- make instructions be 32 bytes - negligible payout
 - safe.Run package (escape valve for lack of defer, recover)
 - init structure without field names (not that useful except for unit tests)
 - anonymous structures `x := []struct{name string}{...}` (not that useful except for unit tests)
@@ -20,6 +26,7 @@
 - support named return values (not useful except for defer/recover)
 - defer, recover (depends on closures, named returns) - maybe useful w/o closures, f.Close(), etc
 - concurrency primitives (go, chan, select, wg, mutex) (depends on closures)
+
 
 # Never
 - methods on non-structs - costs memory without compile-time type tracking
