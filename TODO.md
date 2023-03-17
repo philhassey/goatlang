@@ -4,22 +4,21 @@
 - add a fun interactive example
 
 # Way later (if ever)
-- types that refer to specific structs, global or local (local structs must be globally defined path/to/pkg.FuncName.TypeName)
 - embed as []byte support
 - add custom byte slice type so string <-> []byte isn't a mess
-- auto-init features for type aliases `type T struct{X int}; type A []T; x := A{{X:42}}`
-- also local type aliases
-- add proper field ordering according to struct def (a tiny bit useful)
 - properly handle ignoring _test files, and maybe other os/arch specific files
 
-- add FPUSH, SPUSH - unsafe hacks, but useful to reduce global lookup size
+- add proper field ordering according to struct def (a tiny bit useful)
 - type switch, type assertions (trying to avoid using these anyways)
-- cache parse / compile data so live reload is ultra fast
 
-- make instructions be 32 bytes - negligible payout
-- safe.Run package (escape valve for lack of defer, recover)
+- auto-init features for type aliases `type T struct{X int}; type A []T; x := A{{X:42}}`
 - init structure without field names (not that useful except for unit tests)
 - anonymous structures `x := []struct{name string}{...}` (not that useful except for unit tests)
+
+- add FPUSH, SPUSH (C=len, A+B=16 max) - unsafe hacks, but useful to reduce global lookup size
+- cache parse / compile data so live reload is ultra fast
+- make instructions be 32 bytes - negligible payout
+- safe.Run package (escape valve for lack of defer, recover)
 
 - lambda & closure functions (exact go behavior is very tricky)
 - support named return values (not useful except for defer/recover)
@@ -47,6 +46,8 @@
 - compile time type checking (see: d11d554f3fa501e7b7b1a0a52a29d9ca4780f1bf)
 
 # Done
+- also local type aliases
+- types that refer to specific structs, global or local (local structs must be globally defined path/to/pkg.FuncName.TypeName)
 - search vendor/ for packages
 - named complex types `type Matrix []float64`, `type X []*T`, `type X = T` (auto-init may be tricky)
 - int16, int64 as alias to int32 (lossy, but helpful if depending on a lib using them)

@@ -104,6 +104,11 @@ func TestToken_must(t *testing.T) {
 		x := &token{Text: "0xpanic"}
 		_ = x.Int()
 	})
+	t.Run("Octal", func(t *testing.T) {
+		defer expectPanic(t, "invalid syntax")
+		x := &token{Text: "079"}
+		_ = x.Int()
+	})
 	t.Run("Float64", func(t *testing.T) {
 		defer expectPanic(t, "invalid syntax")
 		x := &token{Text: "panic"}

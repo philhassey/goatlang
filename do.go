@@ -358,7 +358,7 @@ func (v *VM) exec() {
 			lookup := map[string]int{}
 			data := newIntMap(int(i.A) / 2)
 			methods := newIntMap(0)
-			s := newStruct(lookup, data, &methods)
+			s := newStruct(0, lookup, data, &methods)
 			for n := 0; n < int(i.A); n += 2 {
 				k := v.stack[len(v.stack)-int(i.A)+n].Int()
 				s.addField(v.globals.Key(k), k, v.stack[len(v.stack)-int(i.A)+n+1])
@@ -370,6 +370,7 @@ func (v *VM) exec() {
 			i := &codes[v.frame.N]
 			prev := v.globals.Read(int(i.A))
 			cur := v.stack[len(v.stack)-1]
+			cur.value.(*structT).TypeN = int(i.A)
 			v.stack = v.stack[:len(v.stack)-1]
 			if prev.IsNil() {
 				v.globals.Write(int(i.A), cur)
@@ -384,12 +385,12 @@ func (v *VM) exec() {
 			v.stack = v.stack[:len(v.stack)-int(i.B)]
 			v.stack = append(v.stack, s)
 
-		case codeNewLocalStruct:
-			i := &codes[v.frame.N]
-			parent := v.stack[baseN+int(i.A)]
-			s := newStructByIndex(parent, v.stack[len(v.stack)-int(i.B):])
-			v.stack = v.stack[:len(v.stack)-int(i.B)]
-			v.stack = append(v.stack, s)
+		// case codeNewLocalStruct:
+		// 	i := &codes[v.frame.N]
+		// 	parent := v.stack[baseN+int(i.A)]
+		// 	s := newStructByIndex(parent, v.stack[len(v.stack)-int(i.B):])
+		// 	v.stack = v.stack[:len(v.stack)-int(i.B)]
+		// 	v.stack = append(v.stack, s)
 
 		case codeSetMethod:
 			i := &codes[v.frame.N]

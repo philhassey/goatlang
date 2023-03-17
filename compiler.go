@@ -43,20 +43,20 @@ func (i *instruction) String(g *lookup) string {
 		p = append(p, "$"+fmt.Sprint(i.A), g.Key(int(i.B)), fmt.Sprintf("%d:%d", c1, c2))
 	case codeNewStruct:
 		p = append(p, g.Key(int(i.A)), fmt.Sprint(i.B))
-	case codeNewLocalStruct:
-		p = append(p, "$"+fmt.Sprint(i.A), fmt.Sprint(i.B))
+	// case codeNewLocalStruct:
+	// 	p = append(p, "$"+fmt.Sprint(i.A), fmt.Sprint(i.B))
 	case codeSetMethod:
 		p = append(p, g.Key(int(i.A)))
 	case codeFastCall:
 		p = append(p, g.Key(int(i.A)), fmt.Sprint(i.B), fmt.Sprint(i.C))
 	case codeNewSlice:
-		p = append(p, Type(i.A).String(), fmt.Sprint(i.B))
+		p = append(p, Type(i.A).str(g), fmt.Sprint(i.B))
 	case codeNewMap:
-		p = append(p, Type(i.A).String(), Type(i.B).String(), fmt.Sprint(i.C))
+		p = append(p, Type(i.A).str(g), Type(i.B).str(g), fmt.Sprint(i.C))
 	case codeZero, codeType, codeMake:
-		p = append(p, Type(i.A).String())
+		p = append(p, Type(i.A).str(g))
 	case codeConvert, codeCast:
-		p = append(p, Type(i.A).String())
+		p = append(p, Type(i.A).str(g))
 	case codeCall, codeAppend, codeCallVariadic:
 		p = append(p, fmt.Sprint(i.A), fmt.Sprint(i.B))
 	case codeIter:
@@ -448,6 +448,8 @@ func (c *compiler) compile(tok *token) []instruction {
 		key := c.expPrefix(tok.Text)
 		if tok.Text == "$" {
 			res = append(res, instruction{Code: codeGlobalGet, A: reg(c.Globals.Index("$"))})
+		} else if c.isLocal() && c.Globals.Exists(c.FuncName+"."+tok.Text) {
+			res = append(res, instruction{Code: codeGlobalGet, A: reg(c.Globals.Index(c.FuncName + "." + tok.Text))})
 		} else if c.Locals.Exists(tok.Text) {
 			res = append(res, instruction{Code: codeLocalGet, A: reg(c.Locals.Index(tok.Text))})
 		} else if c.Globals.Exists(key) {
@@ -484,6 +486,11 @@ func (c *compiler) compile(tok *token) []instruction {
 		c.Locals = newLookup()
 		c.Begin()
 		arguments := len(tok.Tokens[funcArguments].Tokens)
+		var types []instruction
+		for _, arg := range tok.Tokens[funcArguments].Tokens {
+			t := c.toType(arg.Tokens[0])
+			types = append(types, t)
+		}
 		for _, arg := range tok.Tokens[funcArguments].Tokens {
 			c.Locals.Index(arg.Text)
 		}
@@ -498,10 +505,7 @@ func (c *compiler) compile(tok *token) []instruction {
 			B: reg(c.Locals.Cap()),
 			C: reg(len(block)),
 		})
-		for _, arg := range tok.Tokens[funcArguments].Tokens {
-			t := c.toType(arg.Tokens[0])
-			res = append(res, t)
-		}
+		res = append(res, types...)
 		for _, ret := range tok.Tokens[funcReturns].Tokens {
 			t := c.toType(ret)
 			res = append(res, t)
@@ -753,17 +757,19 @@ func (c *compiler) compile(tok *token) []instruction {
 		getStruct := codeGlobalGet
 
 		if c.isLocal() {
-			setStruct = codeLocalSet
-			getStruct = codeLocalGet
-			idx = c.Shadow(key)
+			// setStruct = codeLocalSet
+			// getStruct = codeLocalGet
+			// idx = c.Shadow(key)
+			key = c.FuncName + "." + key
+			idx = c.Globals.Index(key)
 		} else {
 			key = c.expPrefix(key)
 			idx = c.Globals.Index(key)
 		}
 
-		if getStruct == codeLocalGet {
-			setStruct = codeLocalSet
-		}
+		// if getStruct == codeLocalGet {
+		// 	setStruct = codeLocalSet
+		// }
 		if ts == "interface" {
 			res = append(res, instruction{Code: codeStruct, A: 0})
 			res = append(res, instruction{Code: setStruct, A: reg(idx)})
@@ -790,16 +796,12 @@ func (c *compiler) compile(tok *token) []instruction {
 			break
 		}
 		typ := typeFromToken(c, tok.Tokens[typeStruct])
-		if typ != TypeStruct {
-			c.Globals.Write(int(reg(idx)), newType(typ))
-		} else {
-			ref := c.compile(tok.Tokens[typeStruct])
-			c.Globals.Write(int(reg(idx)), c.Globals.Read(int(ref[0].A)))
-		}
+		c.Globals.Write(int(reg(idx)), newType(typ))
 
 	case "new":
 		const newType, newData = 0, 1
 		ref := c.compile(tok.Tokens[newType])
+		structRef := ref[0].A
 		if ref[0].Code == codeGlobalGet {
 			val := c.Globals.Read(int(ref[0].A))
 			if val.Type() == typeType {
@@ -816,6 +818,9 @@ func (c *compiler) compile(tok *token) []instruction {
 					res = append(res, instruction{Code: codeNewMap, A: reg(kt), B: reg(vt), C: reg(len(tok.Tokens[newData].Tokens))})
 					break
 				}
+				if typ.base() == TypeStruct {
+					structRef = reg(typ.value())
+				}
 			}
 		}
 
@@ -825,10 +830,10 @@ func (c *compiler) compile(tok *token) []instruction {
 			res = append(res, c.compile(tok.Tokens[newData].Tokens[i+1])...)
 		}
 		newStruct := codeNewStruct
-		if ref[0].Code == codeLocalGet {
-			newStruct = codeNewLocalStruct
-		}
-		res = append(res, instruction{Code: newStruct, A: ref[0].A, B: reg(len(tok.Tokens[newData].Tokens))})
+		// if ref[0].Code == codeLocalGet {
+		// 	newStruct = codeNewLocalStruct
+		// }
+		res = append(res, instruction{Code: newStruct, A: structRef, B: reg(len(tok.Tokens[newData].Tokens))})
 	case "method":
 		const methodType, methodName, methodFunc = 0, 1, 2
 		c.FuncName = c.pkgPrefix(tok.Tokens[methodType].Text) + "." + tok.Tokens[methodName].Text
@@ -941,11 +946,16 @@ func typeFromToken(c *compiler, tok *token) Type {
 		return mapType(typeFromToken(c, tok.Tokens[0]), typeFromToken(c, tok.Tokens[1]))
 	case "(name)", ".":
 		ref := c.compile(tok)
-		typ := c.Globals.Read(int(ref[0].A))
+		var typ Value
+		if ref[0].Code == codeGlobalGet {
+			typ = c.Globals.Read(int(ref[0].A))
+		} else {
+			panicf("invalid type: %s", tok.Text)
+		}
 		if typ.t == typeType {
 			return Type(typ.Int())
 		}
-		return TypeStruct
+		return structType(Type(ref[0].A))
 	case "...":
 		return sliceType(typeFromToken(c, tok.Tokens[0]))
 	default:

@@ -159,7 +159,7 @@ func loadStrings(g *lookup) {
 const builtinYield = "builtin.__yield"
 
 func loadBuiltin(g *lookup) {
-	g.Set("builtin.__type", NewFunc(1, 1, func(v *VM) { a := get1v(v); set1v(v, String(a.t.String())) }))
+	g.Set("builtin.__type", NewFunc(1, 1, func(v *VM) { a := get1v(v); set1v(v, String(a.t.str(g))) }))
 	g.Set("builtin.print", NewFunc(1, 0, func(v *VM, args []Value, vargs ...Value) []Value {
 		fmt.Fprint(v.stdout, vaSprint(v, vargs))
 		return nil

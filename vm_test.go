@@ -292,16 +292,30 @@ func TestVM(t *testing.T) {
 		{"lteTrue1", `0<=1`, `true`},
 		{"lteTrue2", `0<=0`, `true`},
 		{"lteFalse", `1<=0`, `false`},
+		{"globalStructType", `type T struct { }; var t T; v := __type(t); v`, `T`},
+		{"packageStructType", `package ext; type T struct { }; var t T; v := __type(t); v`, `ext.T`},
+		{"globalSliceStructType", `type T struct { } ; var t []T; v := __type(t); v`, `[]T`},
+		{"globalMapStructType", `type T struct { } ; var t map[string]T; v := __type(t); v`, `map[string]T`},
+		{"funcStructType", `func f() string { type T struct { }; var t T; return __type(t); } ; v := f(); v`, `f.T`},
+		{"packageFuncStructType", `package ext; func f() string { type T struct { }; var t T; return __type(t); } ; v := f(); v`, `ext.f.T`},
+		{"aliasType", `type T struct{}; type B []T; var x B; v := __type(x); v`, `[]T`},
+		{"localAliasType", `func f() string { type T struct{}; type B []T; var x B; return __type(x); } v := f(); v`, `[]f.T`},
+		{"localTypeZero", `type T string ; func f() any { type T byte; var v T; return v }; v := f(); x := __type(v); x`, `uint8`},
+		{"globalTypeZero", `type T string ; func f() { type T byte; }; f(); var v T; x := __type(v); x`, `string`},
+		{"structType", `type T struct{}; t := &T{}; v := __type(t); v`, `T`},
+		{"structToNilType", `type T struct {} x := &T{}; x = nil; v := __type(x); v`, `T`},
+		{"nilStructType", `type T struct {}; var t *T; v := __type(t); v`, `T`},
+		{"nilStructToNilType", `type T struct {} var x *T; x = nil; v := __type(x); v`, `T`},
+		{"aliasType", `type T struct {}; type B T; var t B; v := __type(t); v`, `T`},
+		{"aliasMethod", `type T struct {}; func (t *T) F() int { return 42 } ; type B T; t := &B{}; v := t.F(); v`, `42`},
+		{"aliasType2x", `type T struct {}; type B T; type C B; var t C; v := __type(t); v`, `T`},
+		{"aliasMethod2x", `type T struct {}; func (t *T) F() int { return 42 } ; type B T; type C B; t := &C{}; v := t.F(); v`, `42`},
 
 		// approximate according to Go
 		{"~funcType", `func t() {}; v := __type(t); v`, `func`},
 		{"~funcToNilType", `func f() {}; x := f; x = nil; v := __type(x); v`, `func`},
 		{"~nilFuncType", `var t func(); v := __type(t); v`, `func`},
 		{"~nilFuncToNilType", `var x func(); x = nil; v := __type(x); v`, `func`},
-		{"~structType", `type T struct{}; t := &T{}; v := __type(t); v`, `struct`},
-		{"~structToNilType", `type T struct {} x := &T{}; x = nil; v := __type(x); v`, `struct`},
-		{"~nilStructType", `type T struct {}; var t *T; v := __type(t); v`, `struct`},
-		{"~nilStructToNilType", `type T struct {} var x *T; x = nil; v := __type(x); v`, `struct`},
 
 		// undefined according to Go
 		{"?intToString", `x := 42; x = "test"; x`, `test`},
@@ -319,6 +333,8 @@ func TestVM(t *testing.T) {
 		{"?upsertTypeMethodAfter", `type T struct {}; func (t *T) f() int { return 42; }; type T struct {}; t := &T{}; v := t.f(); v`, `42`},
 		{"?upsertTypeFieldBefore", `type T struct { X int }; func (t *T) f() any { return t.X }; t := &T{}; type T struct { X string }; v := __type(t.f()); v`, `int32`},
 		{"?upsertTypeFieldAfter", `type T struct { X int }; func (t *T) f() any { return t.X }; type T struct { X string }; t := &T{}; v := __type(t.f()); v`, `string`},
+		{"?typeOfType", `type T struct{}; v := __type(T); v`, `struct`},
+		{"?typeOfAlias", `type T struct{}; type B T; v := __type(B); v`, `type`},
 
 		// incorrect according to Go
 		{"!anyToSliceToNil", `var x any; x = []byte{}; x = nil; x`, `[]`},
@@ -326,7 +342,7 @@ func TestVM(t *testing.T) {
 		{"!anyToSliceToNilType", `var x any; x = []byte{}; x = nil; t := __type(x); t`, `[]uint8`},
 		{"!anyToMapToNilType", `var x any; x = map[string]int{}; x = nil; t := __type(x); t`, `map[string]int32`},
 		{"!anyToFuncToNilType", `func f() {} var x any; x = f; x = nil; t := __type(x); t`, `func`},
-		{"!anyToStructToNilType", `type T struct {} ; var x any; x = &T{}; x = nil; t := __type(x); t`, `struct`},
+		{"!anyToStructToNilType", `type T struct {} ; var x any; x = &T{}; x = nil; t := __type(x); t`, `T`},
 		{"!structNonPointer", `type T struct { V int } ; x := T{}; y = x; y.V = 42; x.V`, `42`},
 	}
 	opts := []struct {

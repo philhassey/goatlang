@@ -73,14 +73,32 @@ var typeToString = map[Type]string{
 	typeType:    "type",
 }
 
-func (t Type) String() string {
+// func (t Type) String() string {
+// 	switch t.base() {
+// 	case TypeSlice:
+// 		v := t.value()
+// 		return "[]" + v.String()
+// 	case TypeMap:
+// 		k, v := t.pair()
+// 		return "map[" + k.String() + "]" + v.String()
+// 	}
+// 	return typeToString[t.base()]
+// }
+
+func (t Type) str(g *lookup) string {
 	switch t.base() {
 	case TypeSlice:
 		v := t.value()
-		return "[]" + v.String()
+		return "[]" + v.str(g)
 	case TypeMap:
 		k, v := t.pair()
-		return "map[" + k.String() + "]" + v.String()
+		return "map[" + k.str(g) + "]" + v.str(g)
+	case TypeStruct:
+		v := t.value()
+		if v > 0 {
+			return g.Key(int(v))
+		}
+		return "struct"
 	}
 	return typeToString[t.base()]
 }
@@ -111,6 +129,10 @@ func sliceType(value Type) Type {
 
 func mapType(key, value Type) Type {
 	return value<<(typeShift*2) | key<<typeShift | TypeMap
+}
+
+func structType(value Type) Type {
+	return value<<typeShift | TypeStruct
 }
 
 var _ Object = &Value{}
@@ -578,7 +600,7 @@ func (v Value) Equals(b Value) bool {
 		return v.num == b.num
 	case v.t == TypeString:
 		return v.value.(stringT) == b.value.(stringT)
-	case v.t == TypeStruct, v.t == TypeFunc:
+	case v.t.base() == TypeStruct, v.t == TypeFunc:
 		return (b.t == TypeNil && v.value == nil) || v.value == b.value
 	case v.t == TypeNil && b.t == TypeNil:
 		return true
@@ -941,6 +963,7 @@ func (m *numericMap) SafeStr() string {
 
 type structT struct {
 	Object
+	TypeN   int
 	Lookup  map[string]int
 	Fields  intMap
 	Methods *intMap
@@ -949,7 +972,7 @@ type structT struct {
 func NewStruct(base Value, data []Value) Value {
 	b := base.value.(*structT)
 	lookup, fields, methods := b.Lookup, b.Fields.Copy(), b.Methods
-	s := newStruct(lookup, fields, methods)
+	s := newStruct(b.TypeN, lookup, fields, methods)
 	st := s.value.(*structT)
 	for n := 0; n < len(data); n += 2 {
 		st.SetAttr(data[n].String(), data[n+1])
@@ -960,7 +983,7 @@ func NewStruct(base Value, data []Value) Value {
 func newStructByIndex(base Value, data []Value) Value {
 	b := base.value.(*structT)
 	lookup, fields, methods := b.Lookup, b.Fields.Copy(), b.Methods
-	s := newStruct(lookup, fields, methods)
+	s := newStruct(b.TypeN, lookup, fields, methods)
 	st := s.value.(*structT)
 	for n := 0; n < len(data); n += 2 {
 		st.SetIndex(data[n].Int(), data[n+1])
@@ -968,8 +991,8 @@ func newStructByIndex(base Value, data []Value) Value {
 	return s
 }
 
-func newStruct(lookup map[string]int, data intMap, methods *intMap) Value {
-	return Value{t: TypeStruct, value: &structT{Lookup: lookup, Fields: data, Methods: methods}}
+func newStruct(typeN int, lookup map[string]int, data intMap, methods *intMap) Value {
+	return Value{t: TypeStruct | Type(typeN<<8), value: &structT{Lookup: lookup, Fields: data, Methods: methods}}
 }
 
 func (s *structT) GetAttr(k string) Value {

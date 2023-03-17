@@ -177,6 +177,7 @@ func TestParse(t *testing.T) {
 		{"fancyTypeAlias", `type Matrix []float64 ; x := Matrix{1,2,3}`, `(type Matrix ([] float64)) (:= (, x) (new Matrix (, 1 2 3)))`},
 		{"typeAliasExact", `type A = T`, `(type A T)`},
 		{"typeAliasMakeSlice", `x = make(Matrix, 16)`, `(= (, x) (make Matrix 16))`},
+		// {"typeAliasInit", `x := A{{X:42}}`, ``},
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {
