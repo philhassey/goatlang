@@ -169,6 +169,14 @@ func rawLoadPackage(sys fs.FS, pkg string) (*token, error) {
 			return nil, fmt.Errorf("error in Glob: %w", err)
 		}
 		if len(matches) > 0 {
+			var m []string
+			for _, f := range matches {
+				if strings.HasSuffix(f, "_test.go") {
+					continue
+				}
+				m = append(m, f)
+			}
+			matches = m
 			break
 		}
 		parts = parts[1:]
