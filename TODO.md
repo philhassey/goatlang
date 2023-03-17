@@ -7,16 +7,15 @@
 - embed as []byte support
 - add custom byte slice type so string <-> []byte isn't a mess
 
-- type switch, type assertions (trying to avoid using these anyways)
-
-- auto-init features for type aliases `type T struct{X int}; type A []T; x := A{{X:42}}` (not that useful)
-- init structure without field names (not that useful except for unit tests)
-- anonymous structures `x := []struct{name string}{...}` (not that useful except for unit tests)
-
 - add FPUSH, SPUSH (C=len, A+B=16 max) - unsafe hacks, but useful to reduce global lookup size
 - cache parse / compile data so live reload is ultra fast
 - make instructions be 32 bytes - negligible payout
+
 - safe.Run package (escape valve for lack of defer, recover)
+- type switch, type assertions (trying to avoid using these anyways)
+- auto-init features for type aliases `type T struct{X int}; type A []T; x := A{{X:42}}` (not that useful)
+- init structure without field names (not that useful except for unit tests)
+- anonymous structures `x := []struct{name string}{...}` (not that useful except for unit tests)
 
 - lambda & closure functions (exact go behavior is very tricky)
 - support named return values (not useful except for defer/recover)
