@@ -47,11 +47,15 @@ func TestLoadPackage(t *testing.T) {
 			"main/main.go":    `package main; import "example.com/test/ext"`,
 			"test/ext/pkg.go": `package ext;`,
 		}, `(package ext example.com/test/ext) (package main) (import ext "example.com/test/ext")`},
-		{"contraint", "main", mapFS{
+		{"constraint", "main", mapFS{
 			"main/main_skip.go":    "//go:build !goat\npackage main; const Skip = true",
 			"main/main_include.go": "//go build goat\npackage main; const Include = true",
 			"main/main.go":         `package main; const None = true`,
 		}, `(package main) (const (, None) true) (const (, Include) true)`},
+		{"vendor", "main", mapFS{
+			"main/main.go":                  `package main; import "example.com/pkg";`,
+			"vendor/example.com/pkg/pkg.go": `package pkg; var x = 42;`,
+		}, `(package pkg example.com/pkg) (:= (, x) 42) (package main) (import pkg "example.com/pkg")`},
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {

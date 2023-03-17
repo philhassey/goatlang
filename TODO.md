@@ -1,5 +1,4 @@
 # To do
-- search vendor/ for packages
 
 # Later
 - add a fun interactive example
@@ -27,7 +26,6 @@
 - defer, recover (depends on closures, named returns) - maybe useful w/o closures, f.Close(), etc
 - concurrency primitives (go, chan, select, wg, mutex) (depends on closures)
 
-
 # Never
 - methods on non-structs - costs memory without compile-time type tracking
 - proper int64, uint64, int16, uint16 - these just don't seem that useful and they take up an extra bit
@@ -49,6 +47,7 @@
 - compile time type checking (see: d11d554f3fa501e7b7b1a0a52a29d9ca4780f1bf)
 
 # Done
+- search vendor/ for packages
 - named complex types `type Matrix []float64`, `type X []*T`, `type X = T` (auto-init may be tricky)
 - int16, int64 as alias to int32 (lossy, but helpful if depending on a lib using them)
 - cleanup func definition

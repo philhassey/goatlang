@@ -159,8 +159,8 @@ func rawLoadFile(sys fs.FS, fname string, checkBC bool) (*token, error) {
 }
 
 func rawLoadPackage(sys fs.FS, pkg string) (*token, error) {
-	parts := strings.Split(pkg, "/")
 	var matches []string
+	parts := append([]string{"vendor"}, strings.Split(pkg, "/")...)
 	for len(parts) > 0 {
 		shortPkg := strings.Join(parts, "/")
 		var err error
