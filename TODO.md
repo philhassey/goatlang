@@ -2,28 +2,28 @@
 
 # Later
 - add a fun interactive example
-
-# Way later (if ever)
+- complete math, rand, strings, maps, slices, errors
 - embed as []byte support
 - add custom byte slice type so string <-> []byte isn't a mess
 
+# Way later (if ever)
 - add FPUSH, SPUSH (C=len, A+B=16 max) - unsafe hacks, but useful to reduce global lookup size
 - cache parse / compile data so live reload is ultra fast
 - make instructions be 32 bytes - negligible payout
-
-- safe.Run package (escape valve for lack of defer, recover)
+- proper int64, uint64, int16, uint16 - (not as useful, might be tricky to do 64 bit)
 - type switch, type assertions (trying to avoid using these anyways)
 
+# Probably never
+- safe.Run package (escape valve for lack of defer, recover)
+- defer, recover (depends on closures, named returns) - maybe useful w/o closures, f.Close(), etc
 - lambda & closure functions (exact go behavior is very tricky)
 - support named return values (not useful except for defer/recover)
-- defer, recover (depends on closures, named returns) - maybe useful w/o closures, f.Close(), etc
 - concurrency primitives (go, chan, select, wg, mutex) (depends on closures)
 - init structure without field names (not that useful except for unit tests, not possible until runtime due to field init)
 - anonymous structures `x := []struct{name string}{...}` (not that useful except for unit tests)
 
 # Never
 - methods on non-structs - costs memory without compile-time type tracking
-- proper int64, uint64, int16, uint16 - these just don't seem that useful and they take up an extra bit
 - real non-pointer structs ??? (maybe copy on get semantics?) - the catch is that
     the memory allocation pattern will be the opposite of expected.
 - pointers to non-structs
