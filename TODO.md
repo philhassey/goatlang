@@ -3,6 +3,7 @@
 # Later
 - add a fun interactive example
 - complete math, rand, strings, maps, slices, errors
+- separate imports into package.  add f:N->0 trick for math.
 - embed as string, []byte support
 
 # Way later (if ever)
