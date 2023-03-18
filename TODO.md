@@ -13,14 +13,13 @@
 
 - safe.Run package (escape valve for lack of defer, recover)
 - type switch, type assertions (trying to avoid using these anyways)
-- auto-init features for type aliases `type T struct{X int}; type A []T; x := A{{X:42}}` (not that useful)
-- init structure without field names (not that useful except for unit tests)
-- anonymous structures `x := []struct{name string}{...}` (not that useful except for unit tests)
 
 - lambda & closure functions (exact go behavior is very tricky)
 - support named return values (not useful except for defer/recover)
 - defer, recover (depends on closures, named returns) - maybe useful w/o closures, f.Close(), etc
 - concurrency primitives (go, chan, select, wg, mutex) (depends on closures)
+- init structure without field names (not that useful except for unit tests, not possible until runtime due to field init)
+- anonymous structures `x := []struct{name string}{...}` (not that useful except for unit tests)
 
 # Never
 - methods on non-structs - costs memory without compile-time type tracking
@@ -43,6 +42,7 @@
 - compile time type checking (see: d11d554f3fa501e7b7b1a0a52a29d9ca4780f1bf)
 
 # Done
+- auto-init features for type aliases `type T struct{X int}; type A []T; x := A{{X:42}}` (not that useful)
 - add proper field ordering according to struct def (a tiny bit useful)
 - properly handle ignoring _test files
 - also local type aliases

@@ -165,6 +165,9 @@ func TestCompile(t *testing.T) {
 		{"castToAlias", `type T int; const C = T(42)`, `PUSH 42; CONVERT int32; GLOBALSET C`},
 		{"argNamedType", `type typ struct {}; func f(typ *typ) { }`, `STRUCT 0; GLOBALSTRUCT typ; FUNC 1:0 1 0; TYPE typ; GLOBALFUNC f`},
 		{"fieldNamedType", `type typ struct {}; func f() { var typ typ }`, `STRUCT 0; GLOBALSTRUCT typ; FUNC 0:0 1 2; ZERO typ; LOCALSET $0; GLOBALFUNC f`},
+		{"sliceMapStringStructInit", `type T struct { X int }; type B T; v := []map[string]B{{"x":{X:1}},{"y":{X:2}}}`,
+			`GLOBALREF X; ZERO int32; STRUCT 2; GLOBALSTRUCT T; CONST "x"; GLOBALREF X; PUSH 1; NEWSTRUCT T 2; NEWMAP string T 2; CONST "y"; GLOBALREF X; PUSH 2; NEWSTRUCT T 2; NEWMAP string T 2; NEWSLICE map[string]T 2; GLOBALSET v`},
+		{"sliceStructInit", `type T struct { X int}; s := []*T{&T{X:42}}`, `GLOBALREF X; ZERO int32; STRUCT 2; GLOBALSTRUCT T; GLOBALREF X; PUSH 42; NEWSTRUCT T 2; NEWSLICE T 1; GLOBALSET s`},
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {

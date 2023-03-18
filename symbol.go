@@ -486,30 +486,6 @@ func constNud(p *parser, t *token) *token {
 	return decl
 }
 
-func getItem(p *parser, typ *token) *token {
-	if typ.Symbol == "(name)" || typ.Symbol == "." {
-		item := symAtPos(p.Token.Pos, "new")
-		item.Append(typ)
-		item.Append(getData(p, nil))
-		return item
-	}
-	if typ.Symbol == "[]" {
-		item := symAtPos(p.Token.Pos, "[]")
-		item.Append(typ.Tokens[0])
-		item.Append(getList(p, typ.Tokens[0]))
-		return item
-	}
-	if typ.Symbol == "map" {
-		item := symAtPos(p.Token.Pos, "map")
-		item.Append(typ.Tokens[0])
-		item.Append(typ.Tokens[1])
-		item.Append(getData(p, typ.Tokens[1]))
-		return item
-	}
-	panicf("unexpected item type: %v", typ.Symbol)
-	return nil
-}
-
 func sliceNud(p *parser, t *token) *token {
 	typ := getType(p)
 	t.Append(typ)
@@ -518,7 +494,7 @@ func sliceNud(p *parser, t *token) *token {
 	if p.Token.Symbol == "(" { // convert
 		return t
 	}
-	data.Tokens = getList(p, typ).Tokens
+	data.Tokens = getData(p).Tokens
 	return t
 }
 func mapNud(p *parser, t *token) *token {
@@ -527,41 +503,24 @@ func mapNud(p *parser, t *token) *token {
 	p.Advance("]")
 	typ := getType(p)
 	t.Append(typ)
-	t.Append(getData(p, typ))
+	t.Append(getData(p))
 	return t
 }
 
-func getData(p *parser, typ *token) *token {
-	t := symAtPos(p.Token.Pos, ",")
+func dataNud(p *parser, t *token) *token {
+	p.N -= 2
+	p.Next()
+	return getData(p)
+}
+
+func getData(p *parser) *token {
+	t := symAtPos(p.Token.Pos, ";")
 	p.Advance("{")
 	for p.Token.Symbol != "}" {
 		t.Append(p.Expression(commaBP))
 		if p.Token.Symbol == ":" {
+			t.Symbol, t.Text = ":", ":"
 			p.Advance(":")
-			if p.Token.Symbol == "{" && typ != nil {
-				item := getItem(p, typ)
-				t.Append(item)
-			} else {
-				t.Append(p.Expression(commaBP))
-			}
-		}
-		if p.Token.Symbol != "," {
-			break
-		}
-		p.Advance(",")
-	}
-	p.Advance("}")
-	return t
-}
-
-func getList(p *parser, typ *token) *token {
-	t := symAtPos(p.Token.Pos, ",")
-	p.Advance("{")
-	for p.Token.Symbol != "}" {
-		if p.Token.Symbol == "{" && typ != nil {
-			item := getItem(p, typ)
-			t.Append(item)
-		} else {
 			t.Append(p.Expression(commaBP))
 		}
 		if p.Token.Symbol != "," {
@@ -685,7 +644,7 @@ func newLed(p *parser, t *token, left *token) *token {
 	tok.Append(left)
 	p.N -= 2
 	p.Next()
-	tok.Append(getData(p, nil))
+	tok.Append(getData(p))
 	return tok
 }
 
@@ -753,7 +712,7 @@ func init() {
 		"...": {Lbp: 150, Led: ellipsisLed},
 		"(":   {Lbp: 150, Nud: parenNud, Led: callLed},
 		"[":   {Lbp: 150, Led: indexLed},
-		"{":   {Lbp: 150, Led: newLed},
+		"{":   {Lbp: 150, Led: newLed, Nud: dataNud},
 
 		"[]":      {Nud: sliceNud},
 		"map":     {Nud: mapNud},

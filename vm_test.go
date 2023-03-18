@@ -311,6 +311,7 @@ func TestVM(t *testing.T) {
 		{"aliasType2x", `type T struct {}; type B T; type C B; var t C; v := __type(t); v`, `T`},
 		{"aliasMethod2x", `type T struct {}; func (t *T) F() int { return 42 } ; type B T; type C B; t := &C{}; v := t.F(); v`, `42`},
 		{"orderFields", `type T struct { Z,Y,X int}; t := &T{}; t`, `&{Z:0 Y:0 X:0}`},
+		{"autoAliasInit", `type T struct{X int}; type A []T; x := A{{X:42},{X:43}}; x`, `[&{X:42} &{X:43}]`},
 
 		// approximate according to Go
 		{"~funcType", `func t() {}; v := __type(t); v`, `func`},

@@ -700,13 +700,12 @@ func (c *compiler) compile(tok *token) []instruction {
 		}
 	case "[]":
 		const newType, newData = 0, 1
-		res = append(res, c.compile(tok.Tokens[newData])...)
-		res = append(res, instruction{Code: codeNewSlice, A: reg(convMap[tok.Tokens[newType].Symbol]), B: reg(len(tok.Tokens[newData].Tokens))})
-
+		typ := sliceType(typeFromToken(c, tok.Tokens[newType]))
+		res = append(res, c.toData(typ, tok.Tokens[newData])...)
 	case "map":
 		const newKeyType, newValueType, newData = 0, 1, 2
-		res = append(res, c.compile(tok.Tokens[newData])...)
-		res = append(res, instruction{Code: codeNewMap, A: reg(typeFromToken(c, tok.Tokens[newKeyType])), B: reg(typeFromToken(c, tok.Tokens[newValueType])), C: reg(len(tok.Tokens[newData].Tokens))})
+		typ := mapType(typeFromToken(c, tok.Tokens[newKeyType]), typeFromToken(c, tok.Tokens[newValueType]))
+		res = append(res, c.toData(typ, tok.Tokens[newData])...)
 	case "range":
 		c.Begin()
 		const rangeKey, rangeValue, rangeItem, rangeBlock = 0, 1, 2, 3
@@ -800,40 +799,8 @@ func (c *compiler) compile(tok *token) []instruction {
 
 	case "new":
 		const newType, newData = 0, 1
-		ref := c.compile(tok.Tokens[newType])
-		structRef := ref[0].A
-		if ref[0].Code == codeGlobalGet {
-			val := c.Globals.Read(int(ref[0].A))
-			if val.Type() == typeType {
-				typ := Type(val.Int())
-				if typ.base() == TypeSlice {
-					res = append(res, c.compile(tok.Tokens[newData])...)
-					res = append(res, instruction{Code: codeNewSlice, A: reg(typ.value()), B: reg(len(tok.Tokens[newData].Tokens))})
-					break
-
-				}
-				if typ.base() == TypeMap {
-					res = append(res, c.compile(tok.Tokens[newData])...)
-					kt, vt := typ.pair()
-					res = append(res, instruction{Code: codeNewMap, A: reg(kt), B: reg(vt), C: reg(len(tok.Tokens[newData].Tokens))})
-					break
-				}
-				if typ.base() == TypeStruct {
-					structRef = reg(typ.value())
-				}
-			}
-		}
-
-		for i := 0; i < len(tok.Tokens[newData].Tokens); i += 2 {
-			t := tok.Tokens[newData].Tokens[i]
-			res = append(res, instruction{Code: codeGlobalRef, A: reg(c.Globals.Index(t.Text))})
-			res = append(res, c.compile(tok.Tokens[newData].Tokens[i+1])...)
-		}
-		newStruct := codeNewStruct
-		// if ref[0].Code == codeLocalGet {
-		// 	newStruct = codeNewLocalStruct
-		// }
-		res = append(res, instruction{Code: newStruct, A: structRef, B: reg(len(tok.Tokens[newData].Tokens))})
+		typ := typeFromToken(c, tok.Tokens[newType])
+		res = append(res, c.toData(typ, tok.Tokens[newData])...)
 	case "method":
 		const methodType, methodName, methodFunc = 0, 1, 2
 		c.FuncName = c.pkgPrefix(tok.Tokens[methodType].Text) + "." + tok.Tokens[methodName].Text
@@ -852,6 +819,42 @@ func (c *compiler) compile(tok *token) []instruction {
 			continue
 		}
 		res[n].Pos = newPos(c.Globals, tok.Pos.Filename, c.FuncName, tok.Pos.Line, tok.Pos.Column)
+	}
+	return res
+}
+
+func (c *compiler) toData(typ Type, data *token) []instruction {
+	var res []instruction
+	if data.Symbol == "new" {
+		return c.compile(data)
+	}
+	switch typ.base() {
+	case TypeMap:
+		kt, vt := typ.pair()
+		for i, t := range data.Tokens {
+			if i%2 == 0 {
+				res = append(res, c.compile(t)...)
+			} else {
+				res = append(res, c.toData(vt, t)...)
+			}
+		}
+		res = append(res, instruction{Code: codeNewMap, A: reg(kt), B: reg(vt), C: reg(len(data.Tokens))})
+	case TypeSlice:
+		dt := typ.value()
+		for _, t := range data.Tokens {
+			res = append(res, c.toData(dt, t)...)
+		}
+		res = append(res, instruction{Code: codeNewSlice, A: reg(dt), B: reg(len(data.Tokens))})
+	case TypeStruct:
+		st := typ.value()
+		for i := 0; i < len(data.Tokens); i += 2 {
+			t := data.Tokens[i]
+			res = append(res, instruction{Code: codeGlobalRef, A: reg(c.Globals.Index(t.Text))})
+			res = append(res, c.compile(data.Tokens[i+1])...)
+		}
+		res = append(res, instruction{Code: codeNewStruct, A: reg(st), B: reg(len(data.Tokens))})
+	default:
+		res = append(res, c.compile(data)...)
 	}
 	return res
 }
