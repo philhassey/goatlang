@@ -3,8 +3,7 @@
 # Later
 - add a fun interactive example
 - complete math, rand, strings, maps, slices, errors
-- embed as []byte support
-- add custom byte slice type so string <-> []byte isn't a mess
+- embed as string, []byte support
 
 # Way later (if ever)
 - add FPUSH, SPUSH (C=len, A+B=16 max) - unsafe hacks, but useful to reduce global lookup size
@@ -12,6 +11,7 @@
 - make instructions be 32 bytes - negligible payout
 - proper int64, uint64, int16, uint16 - (not as useful, might be tricky to do 64 bit)
 - type switch, type assertions (trying to avoid using these anyways)
+- add custom byte slice type so string <-> []byte isn't a mess
 
 # Probably never
 - safe.Run package (escape valve for lack of defer, recover)
