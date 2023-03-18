@@ -168,6 +168,7 @@ func TestCompile(t *testing.T) {
 		{"sliceMapStringStructInit", `type T struct { X int }; type B T; v := []map[string]B{{"x":{X:1}},{"y":{X:2}}}`,
 			`GLOBALREF X; ZERO int32; STRUCT 2; GLOBALSTRUCT T; CONST "x"; GLOBALREF X; PUSH 1; NEWSTRUCT T 2; NEWMAP string T 2; CONST "y"; GLOBALREF X; PUSH 2; NEWSTRUCT T 2; NEWMAP string T 2; NEWSLICE map[string]T 2; GLOBALSET v`},
 		{"sliceStructInit", `type T struct { X int}; s := []*T{&T{X:42}}`, `GLOBALREF X; ZERO int32; STRUCT 2; GLOBALSTRUCT T; GLOBALREF X; PUSH 42; NEWSTRUCT T 2; NEWSLICE T 1; GLOBALSET s`},
+		{"sliceBug", `f := []*F{p2f([]*P{a}),}`, `GLOBALGET a; NEWSLICE P 1; GLOBALGET p2f; CALL 1 1; NEWSLICE F 1; GLOBALSET f`},
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {

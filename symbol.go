@@ -489,11 +489,11 @@ func constNud(p *parser, t *token) *token {
 func sliceNud(p *parser, t *token) *token {
 	typ := getType(p)
 	t.Append(typ)
-	data := symAtPos(p.Token.Pos, ",")
-	t.Append(data)
 	if p.Token.Symbol == "(" { // convert
 		return t
 	}
+	data := symAtPos(p.Token.Pos, ";")
+	t.Append(data)
 	data.Tokens = getData(p).Tokens
 	return t
 }

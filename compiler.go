@@ -825,34 +825,34 @@ func (c *compiler) compile(tok *token) []instruction {
 
 func (c *compiler) toData(typ Type, data *token) []instruction {
 	var res []instruction
-	if data.Symbol == "new" {
-		return c.compile(data)
-	}
-	switch typ.base() {
-	case TypeMap:
-		kt, vt := typ.pair()
-		for i, t := range data.Tokens {
-			if i%2 == 0 {
-				res = append(res, c.compile(t)...)
-			} else {
-				res = append(res, c.toData(vt, t)...)
+	switch data.Symbol {
+	case ";", ":":
+		switch typ.base() {
+		case TypeMap:
+			kt, vt := typ.pair()
+			for i, t := range data.Tokens {
+				if i%2 == 0 {
+					res = append(res, c.compile(t)...)
+				} else {
+					res = append(res, c.toData(vt, t)...)
+				}
 			}
+			res = append(res, instruction{Code: codeNewMap, A: reg(kt), B: reg(vt), C: reg(len(data.Tokens))})
+		case TypeSlice:
+			dt := typ.value()
+			for _, t := range data.Tokens {
+				res = append(res, c.toData(dt, t)...)
+			}
+			res = append(res, instruction{Code: codeNewSlice, A: reg(dt), B: reg(len(data.Tokens))})
+		case TypeStruct:
+			st := typ.value()
+			for i := 0; i < len(data.Tokens); i += 2 {
+				t := data.Tokens[i]
+				res = append(res, instruction{Code: codeGlobalRef, A: reg(c.Globals.Index(t.Text))})
+				res = append(res, c.compile(data.Tokens[i+1])...)
+			}
+			res = append(res, instruction{Code: codeNewStruct, A: reg(st), B: reg(len(data.Tokens))})
 		}
-		res = append(res, instruction{Code: codeNewMap, A: reg(kt), B: reg(vt), C: reg(len(data.Tokens))})
-	case TypeSlice:
-		dt := typ.value()
-		for _, t := range data.Tokens {
-			res = append(res, c.toData(dt, t)...)
-		}
-		res = append(res, instruction{Code: codeNewSlice, A: reg(dt), B: reg(len(data.Tokens))})
-	case TypeStruct:
-		st := typ.value()
-		for i := 0; i < len(data.Tokens); i += 2 {
-			t := data.Tokens[i]
-			res = append(res, instruction{Code: codeGlobalRef, A: reg(c.Globals.Index(t.Text))})
-			res = append(res, c.compile(data.Tokens[i+1])...)
-		}
-		res = append(res, instruction{Code: codeNewStruct, A: reg(st), B: reg(len(data.Tokens))})
 	default:
 		res = append(res, c.compile(data)...)
 	}
