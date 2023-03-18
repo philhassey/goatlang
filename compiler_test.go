@@ -204,6 +204,7 @@ func TestCompile_error(t *testing.T) {
 	}{
 		{"undefined", `import "math"; math.Garbage()`, `undefined`},
 		{"invalidType", `func f() { var T int; var x T }`, `invalid type: T`},
+		{"untypedData", `v := []any{{}}`, `untyped data`},
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {

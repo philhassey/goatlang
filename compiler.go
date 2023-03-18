@@ -852,6 +852,8 @@ func (c *compiler) toData(typ Type, data *token) []instruction {
 				res = append(res, c.compile(data.Tokens[i+1])...)
 			}
 			res = append(res, instruction{Code: codeNewStruct, A: reg(st), B: reg(len(data.Tokens))})
+		default:
+			panicf("untyped data")
 		}
 	default:
 		res = append(res, c.compile(data)...)
