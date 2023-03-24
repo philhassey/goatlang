@@ -313,6 +313,7 @@ func TestVM(t *testing.T) {
 		{"orderFields", `type T struct { Z,Y,X int}; t := &T{}; t`, `&{Z:0 Y:0 X:0}`},
 		{"autoAliasInit", `type T struct{X int}; type A []T; x := A{{X:42},{X:43}}; x`, `[&{X:42} &{X:43}]`},
 		{"sliceOfAny", `type T struct{X int}; v := []any{1,"hi",[]int{1,2,3},map[int]int{4:2},&T{X:42}}; v`, `[1 hi [1 2 3] map[4:2] &{X:42}]`},
+		{"aliasAliasAlias", `type A int; type B A; type C struct{}; type D C; type E map[B]D; var e E; t := __type(e); t`, `map[int32]C`},
 
 		// approximate according to Go
 		{"~funcType", `func t() {}; v := __type(t); v`, `func`},
