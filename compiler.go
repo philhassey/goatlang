@@ -30,8 +30,12 @@ func (i *instruction) String(g *lookup) string {
 		p = append(p, fmt.Sprint(i.A))
 	case codeGlobalGet, codeGlobalSet, codeConst, codeGlobalRef, codeGetAttr, codeSetAttr, codeGlobalFunc, codeGlobalStruct:
 		p = append(p, g.Key(int(i.A)))
+	case codeGlobalZero:
+		p = append(p, g.Key(int(i.A)), Type(i.B).str(g))
 	case codeLocalGet, codeLocalSet:
 		p = append(p, "$"+fmt.Sprint(i.A))
+	case codeLocalZero:
+		p = append(p, "$"+fmt.Sprint(i.A), Type(i.B).str(g))
 	case codeLocalIncDec, codeFastGetInt, codeFastSetInt, codeRange:
 		p = append(p, "$"+fmt.Sprint(i.A), fmt.Sprint(i.B))
 	case codeFastGet, codeFastSet, codeFastGetAttr, codeFastSetAttr:
@@ -374,11 +378,24 @@ func (c *compiler) compile(tok *token) []instruction {
 		values := c.compile(tok.Tokens[1])
 		res = append(res, values...)
 		if len(values) == 0 {
-			for _, arg := range tok.Tokens[0].Tokens {
-				typ := arg.Tokens[0]
-				ct := typeFromToken(c, typ)
-				res = append(res, instruction{Code: codeZero, A: reg(ct)})
+			for _, target := range tok.Tokens[0].Tokens {
+				key := target.Text
+				code := codeGlobalZero
+				lookup := c.Globals
+				typ := typeFromToken(c, target.Tokens[0])
+				var idx int
+				if key == "_" {
+					continue
+				} else if c.isLocal() {
+					code = codeLocalZero
+					idx = c.Shadow(key)
+				} else {
+					key = c.expPrefix(key)
+					idx = lookup.Index(key)
+				}
+				res = append(res, instruction{Code: code, A: reg(idx), B: reg(typ)})
 			}
+			break
 		}
 		for i := 1; i <= len(tok.Tokens[0].Tokens); i++ {
 			target := tok.Tokens[0].Tokens[len(tok.Tokens[0].Tokens)-i]

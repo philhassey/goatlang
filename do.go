@@ -138,6 +138,13 @@ func (v *VM) exec() {
 			v.stack = v.stack[:len(v.stack)-1]
 			v.globals.Assign(int(codes[v.frame.N].A), a)
 
+		case codeGlobalZero:
+			i := &codes[v.frame.N]
+			a := v.globals.Read(int(i.A))
+			if a.IsNil() {
+				v.globals.Assign(int(i.A), newZero(Type(i.B)))
+			}
+
 		case codeGlobalFunc:
 			val := v.stack[len(v.stack)-1]
 			idx := int(codes[v.frame.N].A)
@@ -187,6 +194,10 @@ func (v *VM) exec() {
 		case codeLocalSet:
 			i := &codes[v.frame.N]
 			v.stack, v.stack[baseN+int(i.A)] = v.stack[:len(v.stack)-1], v.stack[len(v.stack)-1].assign(v.stack[baseN+int(i.A)].t)
+
+		case codeLocalZero:
+			i := &codes[v.frame.N]
+			v.stack[baseN+int(i.A)] = newZero(Type(i.B))
 
 		case codeReturn:
 			return

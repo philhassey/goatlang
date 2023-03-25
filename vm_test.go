@@ -339,6 +339,7 @@ func TestVM(t *testing.T) {
 		{"?upsertTypeFieldAfter", `type T struct { X int }; func (t *T) f() any { return t.X }; type T struct { X string }; t := &T{}; v := __type(t.f()); v`, `string`},
 		{"?typeOfType", `type T struct{}; v := __type(T); v`, `struct`},
 		{"?typeOfAlias", `type T struct{}; type B T; v := __type(B); v`, `type`},
+		{"?reloadVar", `var x = 42; var x int; x`, `42`},
 
 		// incorrect according to Go
 		{"!anyToSliceToNil", `var x any; x = []byte{}; x = nil; x`, `[]`},

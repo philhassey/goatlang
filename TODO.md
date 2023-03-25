@@ -43,6 +43,7 @@
 - compile time type checking (see: d11d554f3fa501e7b7b1a0a52a29d9ca4780f1bf)
 
 # Done
+- var G *T should only reset to zero value if undefined. codeGlobalType
 - auto-init features for type aliases `type T struct{X int}; type A []T; x := A{{X:42}}` (not that useful)
 - add proper field ordering according to struct def (a tiny bit useful)
 - properly handle ignoring _test files

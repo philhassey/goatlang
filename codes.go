@@ -14,8 +14,10 @@ const (
 	codeGlobalSet
 	codeGlobalGet
 	codeGlobalFunc
+	codeGlobalZero
 	codeLocalSet
 	codeLocalGet
+	codeLocalZero
 	codeConst
 	codeFunc
 	codeReturn
@@ -104,8 +106,10 @@ var codeToString = map[code]string{
 	codeGlobalSet:  "GLOBALSET",
 	codeGlobalGet:  "GLOBALGET",
 	codeGlobalFunc: "GLOBALFUNC",
+	codeGlobalZero: "GLOBALZERO",
 	codeLocalSet:   "LOCALSET",
 	codeLocalGet:   "LOCALGET",
+	codeLocalZero:  "LOCALZERO",
 	codeConst:      "CONST",
 	codeFunc:       "FUNC",
 	codeReturn:     "RETURN",
