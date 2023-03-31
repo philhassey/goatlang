@@ -1,4 +1,6 @@
 # To do
+- make live reload only active on change to .go files
+- figure out how to decide if a package was natively imported
 
 # Later
 - add a fun interactive example
