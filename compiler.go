@@ -430,6 +430,12 @@ func (c *compiler) compile(tok *token) []instruction {
 		res = append(res, instruction{Code: codeGlobalFunc, A: reg(idx)})
 		c.FuncName = ""
 
+	case "lambda":
+		tmp := c.FuncName
+		c.FuncName = c.pkgPrefix(tok.Tokens[0].Pos.String())
+		res = append(res, c.compile(tok.Tokens[0])...)
+		c.FuncName = tmp
+
 	case "=":
 		res = append(res, c.compile(tok.Tokens[1])...)
 		for i := 1; i <= len(tok.Tokens[0].Tokens); i++ {

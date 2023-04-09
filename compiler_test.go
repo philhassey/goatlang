@@ -171,6 +171,7 @@ func TestCompile(t *testing.T) {
 		{"sliceStructInit", `type T struct { X int}; s := []*T{&T{X:42}}`, `GLOBALREF X; ZERO int32; STRUCT 2; GLOBALSTRUCT T; GLOBALREF X; PUSH 42; NEWSTRUCT T 2; NEWSLICE T 1; GLOBALSET s`},
 		{"sliceBug", `f := []*F{p2f([]*P{a}),}`, `GLOBALGET a; NEWSLICE P 1; GLOBALGET p2f; CALL 1 1; NEWSLICE F 1; GLOBALSET f`},
 		{"varBlank", `var _ int`, ``},
+		{"lambdaFunc", `func f() func() int { return func() int { return 42 }}`, `FUNC 0:1 0 5; TYPE func; FUNC 0:1 0 2; TYPE int32; PUSH 42; RETURN 1; RETURN 1; GLOBALFUNC f`},
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {

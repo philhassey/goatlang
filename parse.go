@@ -31,6 +31,7 @@ type parser struct {
 	Tokens []*token
 	N      int
 	mask   []string
+	Depth  int
 }
 
 func symAtPos(pos scanner.Position, symbol string) *token {
@@ -80,10 +81,12 @@ func (p *parser) Next() *token {
 }
 
 func (p *parser) Expression(rbp int, mask ...string) *token {
+	p.Depth++
 	tmp := p.mask
 	p.mask = mask
 	tok := p.doExpression(rbp)
 	p.mask = tmp
+	p.Depth--
 	return tok
 }
 

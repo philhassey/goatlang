@@ -115,19 +115,23 @@ func getReturns(last *token, p *parser) *token {
 func funcNud(p *parser, t *token) *token {
 	var klass *token
 	wrap := symAtPos(t.Pos, "function")
-	if p.Token.Symbol == "(" {
-		tmp, _ := getArgs(p)
-		klass = tmp.Tokens[0]
-		wrap.rename("method")
-		name := symAtPos(klass.Pos, "(name)")
-		name.Text = klass.Tokens[0].Text
-		wrap.Append(name)
-		wrap.Append(p.Advance("(name)"))
-	} else {
-		wrap.Append(p.Advance("(name)"))
-		if wrap.Tokens[0].Text == "init" {
-			wrap = symAtPos(t.Pos, "init")
+	if p.Depth == 1 {
+		if p.Token.Symbol == "(" {
+			tmp, _ := getArgs(p)
+			klass = tmp.Tokens[0]
+			wrap.rename("method")
+			name := symAtPos(klass.Pos, "(name)")
+			name.Text = klass.Tokens[0].Text
+			wrap.Append(name)
+			wrap.Append(p.Advance("(name)"))
+		} else {
+			wrap.Append(p.Advance("(name)"))
+			if wrap.Tokens[0].Text == "init" {
+				wrap = symAtPos(t.Pos, "init")
+			}
 		}
+	} else {
+		wrap.rename("lambda")
 	}
 	args, last := getArgs(p)
 	if klass != nil {

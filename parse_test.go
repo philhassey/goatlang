@@ -180,6 +180,8 @@ func TestParse(t *testing.T) {
 		{"sliceStructInit", `s := []*T{&T{X:42}}`, `(:= (, s) ([] T (; (new T (: X 42)))))`},
 		{"typeAliasInit", `x := A{{X:42}}`, `(:= (, x) (new A (; (: X 42))))`},
 		{"sliceBug", `f := []*F{p2f([]*P{a}),}`, `(:= (, f) ([] F (; (call p2f (arguments ([] P (; a))) 1))))`},
+
+		{"lambdaFunc", `func f() func() int { return func() int { return 42 }}`, `(function f (func arguments (returns (func arguments (returns int))) (block (return (lambda (func arguments (returns int) (block (return 42))))))))`},
 	}
 	for _, row := range tests {
 		t.Run(row.Name, func(t *testing.T) {
