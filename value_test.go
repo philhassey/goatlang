@@ -306,9 +306,22 @@ func Test_NativeSlice(t *testing.T) {
 }
 
 func Test_Nil(t *testing.T) {
-	v := Nil()
-	res := v.IsNil()
-	assert(t, "res", res, true)
+	t.Run("nil", func(t *testing.T) {
+		v := Nil()
+		res := v.IsNil()
+		assert(t, "res", res, true)
+	})
+	t.Run("func", func(t *testing.T) {
+		v := Nil()
+		v.t = TypeFunc
+		res := v.IsNil()
+		assert(t, "res", res, true)
+	})
+	t.Run("object", func(t *testing.T) {
+		v := Wrap(nil)
+		res := v.IsNil()
+		assert(t, "res", res, true)
+	})
 }
 
 func Test_Value_Unwrap(t *testing.T) {

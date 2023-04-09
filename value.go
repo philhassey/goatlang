@@ -655,7 +655,15 @@ func (v Value) convert(t Type) (res Value) {
 	}
 }
 
-func (v Value) IsNil() bool { return v.t == TypeNil }
+func (v Value) IsNil() bool {
+	switch v.t {
+	case TypeNil:
+		return true
+	case TypeObject, TypeFunc, TypeSlice, TypeStruct, TypeMap:
+		return v.value == nil
+	}
+	return false
+}
 
 func (v Value) data() []Value {
 	if t, ok := v.value.(*sliceT); ok {
