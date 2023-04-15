@@ -2,6 +2,7 @@
 - make live reload only active on change to .go files
 - figure out how to decide if a package was natively imported
 - fix IsNil 
+- float32 alias to float64
 
 # Later
 - add a fun interactive example
