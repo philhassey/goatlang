@@ -48,6 +48,7 @@ func TestBuiltins(t *testing.T) {
 		{"println", `println(42)`, ";42\n"},
 		{"fmt.Print/vargs", `import "fmt"; fmt.Print(40,2)`, `;40 2`},
 		{"fmt.Print/ellipsis", `import "fmt"; fmt.Print([]int{40,2}...)`, `;40 2`},
+		{"fmt.Sprintf", `import "fmt"; v = fmt.Sprintf("%v",42); v`, `42`},
 
 		{"strings.Split", `import "strings"; v := strings.Split("a,b,c", ","); v`, `[a b c]`},
 		{"strings.Join", `import "strings"; v := strings.Join([]string{"a","b","c"},","); v`, `a,b,c`},

@@ -87,6 +87,13 @@ func loadFmt(g *lookup) {
 		fmt.Fprintln(v.stdout, vaSprint(v, vargs))
 		return nil
 	}))
+	g.Set("fmt.Sprintf", NewFunc(2, 1, func(v *VM, args []Value, vargs ...Value) []Value {
+		var va []any
+		for _, v := range vargs {
+			va = append(va, v)
+		}
+		return []Value{String(fmt.Sprintf(args[0].String(), va...))}
+	}))
 }
 
 func loadErrors(g *lookup) {
