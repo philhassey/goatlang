@@ -259,6 +259,9 @@ func loadStrconv(g *VM) {
 	g.Set("strconv.FormatFloat", NewFunc(4, 1, func(vm *VM, args []Value) Value {
 		return String(strconv.FormatFloat(args[0].Float64(), args[1].Uint8(), args[2].Int(), args[3].Int()))
 	}))
+	g.Set("strconv.FormatInt", NewFunc(2, 1, func(vm *VM, args []Value) Value {
+		return String(strconv.FormatInt(int64(args[0].Int()), args[1].Int()))
+	}))
 }
 
 func loadOs(g *VM) {
