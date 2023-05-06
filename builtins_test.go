@@ -79,6 +79,7 @@ func TestBuiltins(t *testing.T) {
 		{"strconv.ParseFloat/error", `import "strconv"; v, err := strconv.ParseFloat("asdf",64); v, err!=nil`, `0 true`},
 		{"strconv.Itoa", `import "strconv"; v := strconv.Itoa(42); v`, `42`},
 		{"strconv.FormatFloat", `import "strconv"; v := strconv.FormatFloat(42,'E',-1,64); v`, `4.2E+01`},
+		{"strconv.ParseInt", `import "strconv"; v, err := strconv.ParseInt("42",10,64); v, err`, `42 nil`},
 
 		{"os.Args", `import "os"; v := len(os.Args); v > 0`, `true`},
 	}

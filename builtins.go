@@ -246,6 +246,13 @@ func loadStrconv(g *VM) {
 		}
 		return []Value{Float64(res), Nil()}
 	}))
+	g.Set("strconv.ParseInt", NewFunc(3, 2, func(vm *VM, args []Value) []Value {
+		res, err := strconv.ParseInt(args[0].String(), args[1].Int(), args[2].Int())
+		if err != nil {
+			return []Value{Int(0), Error(err)}
+		}
+		return []Value{Int(int(res)), Nil()}
+	}))
 	g.Set("strconv.Itoa", NewFunc(1, 1, func(vm *VM, args []Value) Value {
 		return String(strconv.Itoa(args[0].Int()))
 	}))
