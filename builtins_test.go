@@ -55,6 +55,7 @@ func TestBuiltins(t *testing.T) {
 		{"strings.TrimSuffix", `import "strings"; v := strings.TrimSuffix("4233","33"); v`, `42`},
 		{"strings.ReplaceAll", `import "strings"; v := strings.ReplaceAll("41","1","2"); v`, `42`},
 		{"strings.Contains", `import "strings"; v := strings.Contains("x42y","42"); v`, `true`},
+		{"strings.Repeat", `import "strings"; v := strings.Repeat("42",2); v`, `4242`},
 
 		{"__type", `v = __type(42); v`, `number`},
 
