@@ -163,6 +163,9 @@ func loadStrings(g *lookup) {
 	g.Set("strings.Repeat", NewFunc(2, 1, func(v *VM, args []Value) Value {
 		return String(strings.Repeat(args[0].String(), args[1].Int()))
 	}))
+	g.Set("strings.TrimSpace", NewFunc(1, 1, func(v *VM, args []Value) Value {
+		return String(strings.TrimSpace(args[0].String()))
+	}))
 }
 
 const builtinYield = "builtin.__yield"
